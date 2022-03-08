@@ -1,0 +1,7 @@
+tpm2_createprimary -p 9854 -c srk.ctx
+
+for i in {0000..9999}
+do
+	$(tpm2_flushcontext -t)
+	$(tpm2_create -G rsa -P $i -C srk.ctx)
+done

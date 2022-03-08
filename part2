@@ -1,0 +1,46 @@
+#set TCTI and flush context
+export TPM2TOOLS_TCTI=mssim:host=localhost,port=2321
+tpm2_flushcontext -t
+tpm2_flushcontext -s
+tpm2_flushcontext -l
+
+#take ownership of the TPM
+tpm2_clear
+tpm2_startup -c
+tpm2_changeauth -c owner password
+tpm2_changeauth -c endorsement password
+
+#create a PCR policy
+tpm2_startauthsession -S session.ctx
+tpm2_policypcr -S session.ctx -l sha1:23 -L set1.pcr0.policy
+tpm2_flushcontext session.ctx
+rm session.ctx
+
+#create a primary key
+tpm2_createprimary -C o -P password -c prim.ctx
+
+#flush context
+tpm2_flushcontext -t
+
+#create a symmetric aes key for encryption
+tpm2_create -C prim.ctx -G aes128 -u symkey.pub -r symkey.priv
+tpm2_load -C prim.ctx -c symkey.ctx -u symkey.pub -r symkey.priv
+
+#flush context
+tpm2_flushcontext -t
+
+#evict control to make the key persistent
+tpm2_evictcontrol -C o -c symkey.ctx 0x81010020 -P password
+
+#flush context
+tpm2_flushcontext -t
+
+#encrypt the file
+tpm2_encryptdecrypt -c 0x81010020 -o encrypted.enc $1
+
+#flush context
+tpm2_flushcontext -t
+
+#create sealing object
+tpm2_create -g sha256 -u sealkey.pub -r sealkey.priv -L set1.pcr0.policy -C prim.ctx -i encrypted.enc
+tpm2_load -C prim.ctx -c sealkey.ctx -u sealkey.pub -r sealkey.priv

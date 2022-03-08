@@ -1,0 +1,35 @@
+#SERVER B
+
+#connect to tpm simulator on port 3321
+export TPM2TOOLS_TCTI=mssim:host=localhost,port=3321
+tpm2_startup -c
+
+#MIGRATE ASSYMETRIC KEY FROM SERVER A TO SERVER B
+
+#create an auth session and policy that allows duplication
+tpm2_startauthsession --policy-session -S session.dat
+tpm2_policycommandcode -S session.dat -L dupPolicy.dat TPM2_CC_Duplicate
+
+#load the context used for the transfer
+tpm2_flushcontext -t
+tpm2_load -C primary.ctx -u newParent.pub -r newParent.priv -c newParent.ctx
+
+#import the duplicated context against the parent object
+tpm2_import -C newParent.ctx -u dup.pub -i dup.dpriv -r dup.priv -s dup.seed -L dupPolicy.dat
+
+#load the duplicated key context
+tpm2_flushcontext -t
+tpm2_load -C newParent.ctx -u dup.pub -r dup.priv -c dup.ctx
+
+#test the imported key - sign
+echo "secret message" > secret.txt
+tpm2_sign -c dup.ctx -g sha256 -o sig.rss -p password secret.txt
+dd if=sig.rss of=sign.raw bs=1 skip=6 count=256
+
+#compare the signature file hash
+sha256sum sign.raw
+
+#decrypt using the key
+tpm2_flushcontext -t
+tpm2_rsadecrypt -p password -c dup.ctx -o data.ptext data.encrypted
+cat data.ptext

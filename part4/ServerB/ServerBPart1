@@ -1,0 +1,17 @@
+#SERVERB
+
+#connect to tpm simulator on port 3321
+export TPM2TOOLS_TCTI=mssim:host=localhost,port=3321
+tpm2_startup -c
+
+#MIGRATE ASSYMETRIC KEY FROM SERVER A TO SERVER B
+
+#take ownership of the tpm
+tpm2_clear
+tpm2_startup -c
+tpm2_changeauth -c owner password
+tpm2_changeauth -c endorsement password
+
+#create a parent object to wrap/transfer the rsa key
+tpm2_createprimary -C o -P password -g sha256 -G rsa -c primary.ctx
+tpm2_create -C primary.ctx -g sha256 -G rsa -r newParent.priv -u newParent.pub -a "restricted|sensitivedataorigin|decrypt|userwithauth"

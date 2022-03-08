@@ -1,0 +1,24 @@
+#clear the tpm
+tpm2_clear
+
+#flush context
+tpm2_flushcontext -t
+
+#create an EK
+tpm2_createek -c 0x81010002 -G rsa -u ek.pub
+
+#create an AK
+tpm2_createak -C 0x81010002 -c ak.ctx -G rsa -g sha256 -s rsassa -u ak.pub -r ak.priv -f pem -n ak.name
+
+#flush context
+tpm2_flushcontext -t
+
+#create the ticket
+tpm2_hash -C e -g sha256 -o hash.bin -t ticket.bin message.dat
+
+#sign with the AK, providing the ticket as a parameter
+tpm2_sign -c ak.ctx -g sha256 -t ticket.bin -o sig.rssa message.dat
+
+#verify signature
+tpm2_verifysignature -c ak.ctx -g sha256 -s sig.rssa -m message.dat
+

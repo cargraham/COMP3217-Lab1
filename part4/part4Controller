@@ -1,0 +1,25 @@
+#CONTROLLER TO ENSURE EVERYTHING HAPPENS IN THE CORRECT ORDER
+
+#start serverB part 1 - NEED TO CHANGE DIRECTORY
+cd ServerB
+bash ServerBPart1
+
+#copy the public portion of the parent object from server B to server A
+cp newParent.pub ../ServerA
+
+#return to parent directory
+cd ..
+
+#start serverA part 1
+cd ServerA
+bash ServerAPart1
+
+#copy dup files to ServerB
+cp dup.pub dup.dpriv dup.seed data.encrypted ../ServerB
+
+#return to parent directory
+cd ..
+
+#start serverB part 2
+cd ServerB
+bash ServerBPart2
