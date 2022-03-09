@@ -17,8 +17,10 @@ cd ..
 cd ServerA
 bash ServerAPart1
 
+#MIGRATE ASYMMETRIC AND ENCRYPTED SYMMETRIC KEY TO SERVER B
+
 #copy dup files to Server B
-cp dup.pub dup.dpriv dup.seed data.encrypted sig.rssa ../ServerB
+cp dup.pub dup.dpriv dup.seed sig.rssa aes.enc ../ServerB
 
 #return to parent directory
 cd ..
@@ -26,20 +28,3 @@ cd ..
 #start Server B part 2
 cd ServerB
 bash ServerBPart2
-
-#return to parent directory
-cd ..
-
-#start Server A part 2
-cd ServerA
-bash ServerAPart2
-
-#copy the encrypted symmetric key from Server A to Server B
-cp aes.enc symsig.rssa symsecret.enc ../ServerB
-
-#return to parent directory
-cd ..
-
-#start serverB part 3
-cd ServerB
-bash ServerBPart3

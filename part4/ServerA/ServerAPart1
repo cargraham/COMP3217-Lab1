@@ -1,4 +1,4 @@
-#SERVER A
+#SERVER A PART 1
 
 #connect to tpm simulator on port 2321
 export TPM2TOOLS_TCTI=mssim:host=localhost,port=2321
@@ -25,12 +25,18 @@ tpm2_flushcontext -t
 tpm2_load -C primary.ctx -r key.priv -u key.pub -c key.ctx
 tpm2_readpublic -c key.ctx -o dup.pub
 
-#sign and encrypt locally
-echo "secret message" > secret.txt
+#GENERATE SYMMETRIC KEY AND ENCRYPT WITH ASYMMETRIC KEY
+
+#generate symmetric key through random hex number
+tpm2_getrandom -o aes.ctx --hex 16
+
+#encrypt symmetric key with rsa key generated earlier
 tpm2_flushcontext -t
-tpm2_rsaencrypt -c key.ctx -o data.encrypted secret.txt #rename the encrypted file
+tpm2_rsaencrypt -c key.ctx -o aes.enc aes.ctx
+
+#sign public portion of the rsa key
 tpm2_flushcontext -t
-tpm2_sign -c key.ctx -g sha256 -p password -o sig.rssa secret.txt
+tpm2_sign -c key.ctx -g sha256 -p password -o sig.rssa key.pub
 
 #start an auth session and policy command to allow duplication
 tpm2_startauthsession --policy-session -S session.dat
