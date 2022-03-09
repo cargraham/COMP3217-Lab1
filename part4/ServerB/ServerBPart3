@@ -1,0 +1,17 @@
+#SERVER B
+
+#connect to tpm simulator on port 3321
+export TPM2TOOLS_TCTI=mssim:host=localhost,port=3321
+tpm2_startup -c
+
+#DECRYPT SYMMETRIC KEY
+
+#decrypt symmetric key using the rsa key
+tpm2_flushcontext -t
+tpm2_rsadecrypt -p password -c dup.ctx -o aes.ctx aes.enc
+
+#decrypt secret.txt with the symmetric key
+tpm2_encryptdecrypt -d -c aes.ctx -o symsecret.txt symsecret.enc
+
+#verify signature with the symmetric key
+tpm2_verifysignature -c aes.ctx -g sha256 -s symsig.rssa -m symsecret.txt

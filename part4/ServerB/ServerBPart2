@@ -21,15 +21,11 @@ tpm2_import -C newParent.ctx -u dup.pub -i dup.dpriv -r dup.priv -s dup.seed -L 
 tpm2_flushcontext -t
 tpm2_load -C newParent.ctx -u dup.pub -r dup.priv -c dup.ctx
 
-#test the imported key - sign
-echo "secret message" > secret.txt
-tpm2_sign -c dup.ctx -g sha256 -o sig.rss -p password secret.txt
-dd if=sig.rss of=sign.raw bs=1 skip=6 count=256
+#decrypt message to verify signature
+tpm2_rsadecrypt -p password -c dup.ctx -o secret.txt data.encrypted
 
-#compare the signature file hash
-sha256sum sign.raw
-
-#decrypt using the key
+#flush context
 tpm2_flushcontext -t
-tpm2_rsadecrypt -p password -c dup.ctx -o data.ptext data.encrypted
-cat data.ptext
+
+#verifying signature
+tpm2_verifysignature -c dup.ctx -g sha256 -s sig.rssa -m secret.txt

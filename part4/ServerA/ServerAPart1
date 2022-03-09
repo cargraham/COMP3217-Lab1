@@ -25,15 +25,12 @@ tpm2_flushcontext -t
 tpm2_load -C primary.ctx -r key.priv -u key.pub -c key.ctx
 tpm2_readpublic -c key.ctx -o dup.pub
 
-#test sign and encryption locally - to be used for comparison later
+#sign and encrypt locally
 echo "secret message" > secret.txt
 tpm2_flushcontext -t
-tpm2_rsaencrypt -c key.ctx -o data.encrypted secret.txt
+tpm2_rsaencrypt -c key.ctx -o data.encrypted secret.txt #rename the encrypted file
 tpm2_flushcontext -t
-tpm2_sign -c key.ctx -g sha256 -f plain -p password -o sign.raw secret.txt
-
-#compare the signature hash - to be used for comparison later
-sha256sum sign.raw
+tpm2_sign -c key.ctx -g sha256 -p password -o sig.rssa secret.txt
 
 #start an auth session and policy command to allow duplication
 tpm2_startauthsession --policy-session -S session.dat

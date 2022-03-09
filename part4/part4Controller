@@ -1,10 +1,13 @@
 #CONTROLLER TO ENSURE EVERYTHING HAPPENS IN THE CORRECT ORDER
 
-#start serverB part 1 - NEED TO CHANGE DIRECTORY
+#open TPM simulators
+bash openTPMSimulators
+
+#start serverB part 1
 cd ServerB
 bash ServerBPart1
 
-#copy the public portion of the parent object from server B to server A
+#copy the public portion of the parent object from Server B to Server A
 cp newParent.pub ../ServerA
 
 #return to parent directory
@@ -14,12 +17,29 @@ cd ..
 cd ServerA
 bash ServerAPart1
 
-#copy dup files to ServerB
-cp dup.pub dup.dpriv dup.seed data.encrypted ../ServerB
+#copy dup files to Server B
+cp dup.pub dup.dpriv dup.seed data.encrypted sig.rssa ../ServerB
 
 #return to parent directory
 cd ..
 
-#start serverB part 2
+#start Server B part 2
 cd ServerB
 bash ServerBPart2
+
+#return to parent directory
+cd ..
+
+#start Server A part 2
+cd ServerA
+bash ServerAPart2
+
+#copy the encrypted symmetric key from Server A to Server B
+cp aes.enc symsig.rssa symsecret.enc ../ServerB
+
+#return to parent directory
+cd ..
+
+#start serverB part 3
+cd ServerB
+bash ServerBPart3
