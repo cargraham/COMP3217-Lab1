@@ -26,7 +26,7 @@ tpm2_load -C newParent.ctx -u dup.pub -r dup.priv -c dup.ctx
 #verifying signature
 tpm2_verifysignature -c dup.ctx -g sha256 -s sig.rssa -m dup.pub
 
-#DECRYPT SYMMETRIC KEY
+#IF SIGNATURE IS VERIFIED THEN DECRYPT SYMMETRIC KEY
 
 #decrypt symmetric key using the rsa key
 tpm2_flushcontext -t
