@@ -1,0 +1,5 @@
+#hash the file and store in a variable
+hash=$(tpm2_hash -g sha256 --hex dummy.txt)
+
+#extend the hash into PCR10
+tpm2_pcrextend 10:sha256=$hash

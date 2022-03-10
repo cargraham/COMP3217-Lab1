@@ -1,5 +1,7 @@
-tpm2_createprimary -p 9854 -c srk.ctx
+#create an SRK under the owner hierarchy with the auth value 9854
+tpm2_createprimary -C o -p 9854 -c srk.ctx
 
+#attempt a brute force attack by trying every auth value from 0000 to 9999
 for i in {0000..9999}
 do
 	$(tpm2_flushcontext -t)

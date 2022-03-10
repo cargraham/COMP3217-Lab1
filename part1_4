@@ -1,0 +1,27 @@
+#flush context
+tpm2_flushcontext -t
+tpm2_flushcontext -s
+tpm2_flushcontext -l
+
+#create a primary key
+tpm2_createprimary -C e -c primary.ctx
+
+#create the symmetric key using a random number
+tpm2_getrandom -o aes.ctx --hex 16
+
+#create a policy
+tpm2_createpolicy \--policy-pcr -l 0x4:0 -L policy.poc
+
+#flush context
+tpm2_flushcontext -t
+tpm2_flushcontext -s
+
+#create an asymmetric key 
+tpm2_create -C primary.ctx -u asym.pub -r asym.priv -g sha256 -G rsa -L policy.poc
+tpm2_load -C primary.ctx -u asym.pub -r asym.priv -c asym.ctx
+
+#flush context
+tpm2_flushcontext -t
+
+#encrypt the symmetric key using the asymmetric key
+tpm2_rsaencrypt -c asym.ctx -o aes.enc aes.ctx
